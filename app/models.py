@@ -1,6 +1,12 @@
+from flask import current_app
 from flask_login import UserMixin
 from app import db
 from datetime import datetime
+
+
+def get_current_time():
+    tz = current_app.config['TIME_ZONE']
+    return datetime.now(tz)
 
 
 class User(UserMixin, db.Model):
@@ -15,11 +21,26 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'image_url': self.image_url
+        }
+
 
 class FailedLoginAttempt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=get_current_time)
     attempted_url = db.Column(db.String(512))
 
     def __init__(self, attempted_url):
         self.attempted_url = attempted_url
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'attempted_url': self.attempted_url
+        }

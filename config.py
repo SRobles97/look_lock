@@ -1,6 +1,8 @@
 # config.py
 import os
 
+import pytz
+
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY')
@@ -12,3 +14,4 @@ class Config:
                               f"{os.getenv('DB_HOST')}:" \
                               f"{os.getenv('DB_PORT')}/" \
                               f"{os.getenv('DB_NAME')}"
+    TIME_ZONE = pytz.timezone('America/Santiago')

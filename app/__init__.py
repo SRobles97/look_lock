@@ -29,8 +29,8 @@ def create_app():
         return User.query.get(int(user_id))
 
     from app.auth import auth_blueprint
-    from app.test import test_blueprint
+    from app.protected import protected_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
-    app.register_blueprint(test_blueprint, url_prefix='/protected')
+    app.register_blueprint(protected_blueprint, url_prefix='/protected')
 
     return app

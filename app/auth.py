@@ -8,7 +8,6 @@ from flask_login import login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 from app.models import User, FailedLoginAttempt
-from datetime import datetime
 
 auth_blueprint = Blueprint('auth_blueprint', __name__)
 

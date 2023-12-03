@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
 from flask_login import login_required
-from sqlalchemy import cast, Date, Time
 
 from app import db
 from app.models import User, FailedLoginAttempt
@@ -16,6 +15,14 @@ protected_blueprint = Blueprint('protected_blueprint', __name__)
 def get_all_attempts():
     attempts = FailedLoginAttempt.query.all()
     return jsonify([attempt.to_dict() for attempt in attempts]), 200
+
+
+@protected_blueprint.route('/attempts/<attempt_id>', methods=['GET'])
+@jwt_required()
+@login_required
+def get_attempt_by_id(attempt_id):
+    attempt = FailedLoginAttempt.query.get(attempt_id)
+    return jsonify(attempt.to_dict()), 200
 
 
 @protected_blueprint.route('/attempts/date/<date>', methods=['GET'])

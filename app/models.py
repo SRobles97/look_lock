@@ -1,5 +1,6 @@
 from flask_login import UserMixin
 from app import db
+from datetime import datetime
 
 
 class User(UserMixin, db.Model):
@@ -13,3 +14,12 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+
+class FailedLoginAttempt(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    attempted_url = db.Column(db.String(512))
+
+    def __init__(self, attempted_url):
+        self.attempted_url = attempted_url

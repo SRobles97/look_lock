@@ -7,7 +7,8 @@ from flask_jwt_extended import create_access_token
 from flask_login import login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-from app.models import User
+from app.models import User, FailedLoginAttempt
+from datetime import datetime
 
 auth_blueprint = Blueprint('auth_blueprint', __name__)
 
@@ -70,6 +71,8 @@ def login_with_image():
     response = requests.get(image_url)
     sent_image = face_recognition.load_image_file(BytesIO(response.content))
 
+    face_found = False
+
     for user in User.query.all():
         user_image_url = user.image_url
         response = requests.get(user_image_url)
@@ -78,13 +81,17 @@ def login_with_image():
         try:
             sent_encoding = face_recognition.face_encodings(sent_image)[0]
             user_encoding = face_recognition.face_encodings(user_image)[0]
+            results = face_recognition.compare_faces([user_encoding], sent_encoding)
+            if results[0]:
+                face_found = True
+                access_token = create_access_token(identity=user.id)
+                return jsonify({'message': 'Inicio de sesión exitoso', 'access_token': access_token}), 200
         except IndexError:
             continue
 
-        results = face_recognition.compare_faces([user_encoding], sent_encoding)
-        if results[0]:
-            # Crear el token JWT para el usuario
-            access_token = create_access_token(identity=user.id)
-            return jsonify({'message': 'Inicio de sesión exitoso', 'access_token': access_token}), 200
-
-    return jsonify({'message': 'Reconocimiento facial no coincidente'}), 401
+    if not face_found:
+        # Crear un registro de intento fallido
+        failed_attempt = FailedLoginAttempt(attempted_url=image_url)
+        db.session.add(failed_attempt)
+        db.session.commit()
+        return jsonify({'message': 'Reconocimiento facial no coincidente'}), 401

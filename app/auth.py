@@ -2,7 +2,7 @@ from io import BytesIO
 
 import face_recognition
 import requests
-from flask import request, jsonify, Blueprint
+from flask import request, jsonify, Blueprint, make_response
 from flask_jwt_extended import create_access_token
 from flask_login import login_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -84,7 +84,10 @@ def login_with_image():
             if results[0]:
                 face_found = True
                 access_token = create_access_token(identity=user.id)
-                return jsonify({'message': 'Inicio de sesión exitoso', 'access_token': access_token}), 200
+                response = make_response(jsonify({'message': 'Inicio de sesión exitoso', 'access_token': access_token}),
+                                         200)
+                response.set_cookie('access_cookie', access_token, httponly=True)
+                return response
         except IndexError:
             continue
 

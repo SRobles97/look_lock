@@ -28,8 +28,10 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
+    from app.public import public_blueprint
     from app.auth import auth_blueprint
     from app.protected import protected_blueprint
+    app.register_blueprint(public_blueprint, url_prefix='/public')
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(protected_blueprint, url_prefix='/protected')
 

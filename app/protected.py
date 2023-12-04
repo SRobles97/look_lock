@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
-from flask_login import login_required
 
 from app import db
 from app.models import User, FailedLoginAttempt
@@ -11,7 +10,6 @@ protected_blueprint = Blueprint('protected_blueprint', __name__)
 
 @protected_blueprint.route('/attempts/all', methods=['GET'])
 @jwt_required()
-@login_required
 def get_all_attempts():
     attempts = FailedLoginAttempt.query.all()
     return jsonify([attempt.to_dict() for attempt in attempts]), 200
@@ -19,7 +17,6 @@ def get_all_attempts():
 
 @protected_blueprint.route('/attempts/<attempt_id>', methods=['GET'])
 @jwt_required()
-@login_required
 def get_attempt_by_id(attempt_id):
     attempt = FailedLoginAttempt.query.get(attempt_id)
     return jsonify(attempt.to_dict()), 200
@@ -27,7 +24,6 @@ def get_attempt_by_id(attempt_id):
 
 @protected_blueprint.route('/attempts/date/<date>', methods=['GET'])
 @jwt_required()
-@login_required
 def get_attempts_by_date(date):
     try:
         date_obj = datetime.strptime(date, '%Y-%m-%d')
@@ -43,7 +39,6 @@ def get_attempts_by_date(date):
 
 @protected_blueprint.route('/attempts/date/<date>/from/<start_time>/to/<end_time>', methods=['GET'])
 @jwt_required()
-@login_required
 def get_attempts_by_time_range(date, start_time, end_time):
     try:
         # Convierte fecha y horas de string a objetos datetime
@@ -69,7 +64,6 @@ def get_attempts_by_time_range(date, start_time, end_time):
 
 @protected_blueprint.route('/users/all', methods=['GET'])
 @jwt_required()
-@login_required
 def get_all_users():
     users = User.query.all()
     return jsonify([user.to_dict() for user in users]), 200
@@ -77,7 +71,6 @@ def get_all_users():
 
 @protected_blueprint.route('/users/<user_id>', methods=['GET'])
 @jwt_required()
-@login_required
 def get_user_by_id(user_id):
     user = User.query.get(user_id)
     return jsonify(user.to_dict()), 200

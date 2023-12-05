@@ -30,8 +30,7 @@ def create_app():
     from app.models import User
 
     # Inicializa el proceso de captura de fotos
-    photo_process = threading.Thread(target=initialize_photo_process, daemon=True)
-    photo_process.start()
+    threading.Thread(target=initialize_photo_process, daemon=True).start()
 
     @login_manager.user_loader
     def load_user(user_id):

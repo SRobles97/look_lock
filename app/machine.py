@@ -1,17 +1,18 @@
-from flask import Blueprint, jsonify
-
-from app import db
-from app.models import User, FailedLoginAttempt
-from datetime import datetime
-
-machine_blueprint = Blueprint('machine_blueprint', __name__)
+from picamera2 import Picamera2
+import time
 
 
-def tomar_foto():
-    pass
+def take_picture():
+    picam2 = Picamera2()
+    camera_config = picam2.create_still_configuration(main={"size": (1920, 1080)})
+    picam2.configure(camera_config)
+    picam2.start()
+    time.sleep(2)
+    picam2.capture_file("test.jpg")
+    picam2.stop()
 
 
-@machine_blueprint.route('/take-photo', methods=['GET'])
-def take_photo_endpoint():
-    take_photo()
-    return "Foto tomada", 200
+def initialize_photo_process():
+    while True:
+        take_picture()
+        time.sleep(300)  # Espera 5 minutos antes de tomar la siguiente foto

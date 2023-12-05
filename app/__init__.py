@@ -5,6 +5,8 @@ from flask_jwt_extended import JWTManager
 
 from app.mqtt_client import configure_mqtt
 from config import Config
+from app.machine import initialize_photo_process
+import threading
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -26,6 +28,10 @@ def create_app():
         db.create_all()
 
     from app.models import User
+
+    # Inicializa el proceso de captura de fotos
+    photo_process = threading.Thread(target=initialize_photo_process, daemon=True)
+    photo_process.start()
 
     @login_manager.user_loader
     def load_user(user_id):

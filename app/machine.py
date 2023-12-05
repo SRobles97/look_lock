@@ -1,6 +1,8 @@
 from picamera2 import Picamera2
 import time
 
+from app.util.files_utils import upload_image
+
 # Única instancia de Picamera2
 picam2 = Picamera2()
 
@@ -12,6 +14,7 @@ def take_picture(camera):
         camera.start()
         time.sleep(2)
         camera.capture_file("app/static/images/last_photo.jpg")
+        upload_image("last_photo.jpg")
     finally:
         camera.stop()
 

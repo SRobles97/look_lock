@@ -19,3 +19,6 @@ class Config:
     MQTT_PORT = int(os.getenv('THINGSBOARD_PORT'))
     MQTT_TOKEN = os.getenv('THINGSBOARD_TOKEN')
     MQTT_TOPIC = os.getenv('THINGSBOARD_TOPIC')
+    GITHUB_REPO = os.getenv('GITHUB_REPO')
+    GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+    GITHUB_USER = os.getenv('GITHUB_BRANCH')

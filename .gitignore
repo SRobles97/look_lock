@@ -9,7 +9,7 @@ venv/
 __pycache__/
 *.pyc
 
-app/test.jpg
+app/static/images/
 
 # IDE-specific files
 .idea/

@@ -3,6 +3,7 @@
 
 # Entorno virtual
 lockvenv/
+venv/
 
 # Byte-compiled / optimized Python files
 __pycache__/

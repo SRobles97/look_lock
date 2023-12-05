@@ -19,7 +19,6 @@ def create_app():
 
     with app.app_context():
         from app import models
-        db.drop_all()
         db.create_all()
 
     from app.models import User

@@ -11,19 +11,25 @@ def upload_image(filename):
         repo = g.get_user().get_repo(Config.GITHUB_REPO)
         branch = repo.get_branch("main")
 
-        with open(f'app/static/images/{filename}', 'rb') as file:
-            content = file.read()
-            content_base64 = base64.b64encode(content).decode()
+         # Asegúrate de que el archivo está en el lugar correcto y tiene el nombre correcto.
+        image_path = f'app/static/images/{filename}'
+        with open(image_path, 'rb') as image_file:
+        # GitHub espera que el contenido del archivo binario sea base64 codificado.
+             content = base64.b64encode(image_file.read())
 
-        git_file = f'static/images/{filename}'
-        element = InputGitTreeElement(git_file, '100644', 'blob', content_base64)
-        tree = repo.create_git_tree([element], repo.get_git_tree(branch.commit.sha))
+        # Crea un objeto GitBlob que represente el archivo binario.
+        git_blob = repo.create_git_blob(content.decode('utf-8'), "base64")
+
+        # Crea un árbol con el nuevo blob y el árbol actual de la rama para mantener otros archivos.
+        base_tree = repo.get_git_tree(branch.commit.sha)
+        element = InputGitTreeElement(path=filename, mode='100644', type='blob', sha=git_blob.sha)
+        tree = repo.create_git_tree([element], base_tree)
+
+        # Crea un nuevo commit en la rama.
         parent = repo.get_git_commit(branch.commit.sha)
         commit = repo.create_git_commit("Subida de imagen", tree, [parent])
-
-        # Actualiza la rama con el nuevo commit
-        ref = f'refs/heads/{branch.name}'
-        repo.get_git_ref(ref[5:]).edit(commit.sha)
-
+        ref = repo.get_git_ref(f'heads/{branch.name}')
+        ref.edit(sha=commit.sha)
+    
     except Exception as e:
         print(f"Error al subir la imagen a GitHub: {e}")

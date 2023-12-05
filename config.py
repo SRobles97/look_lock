@@ -15,3 +15,7 @@ class Config:
                               f"{os.getenv('DB_PORT')}/" \
                               f"{os.getenv('DB_NAME')}"
     TIME_ZONE = pytz.timezone('America/Santiago')
+    MQTT_SERVER = os.getenv('THINGSBOARD_HOST')
+    MQTT_PORT = int(os.getenv('THINGSBOARD_PORT'))
+    MQTT_TOKEN = os.getenv('THINGSBOARD_TOKEN')
+    MQTT_TOPIC = os.getenv('THINGSBOARD_TOPIC')

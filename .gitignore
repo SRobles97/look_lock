@@ -9,9 +9,6 @@ venv/
 __pycache__/
 *.pyc
 
-# Virtual environment
-venv/
-
 # IDE-specific files
 .idea/
 .vscode/
@@ -19,23 +16,14 @@ venv/
 # Logs
 *.log
 
-# Environment variables
-.env
 
 # Database files
 *.db
 
-# Compiled Python files
-*.pyc
-
-# Byte-compiled / optimized Python files
-__pycache__/
-
 # Local configuration file (if using Flask's instance folder)
 instance/
 
-# Compiled Python files
-*.pyc
+
 
 # macOS system files
 .DS_Store

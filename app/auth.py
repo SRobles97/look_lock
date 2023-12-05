@@ -1,3 +1,5 @@
+import json
+from datetime import datetime
 from io import BytesIO
 
 import face_recognition
@@ -8,6 +10,8 @@ from flask_login import login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 from app.models import User, FailedLoginAttempt
+from app.mqtt_client import publish_to_mqtt
+from config import Config
 
 auth_blueprint = Blueprint('auth_blueprint', __name__)
 
@@ -96,4 +100,16 @@ def login_with_image():
         failed_attempt = FailedLoginAttempt(attempted_url=image_url)
         db.session.add(failed_attempt)
         db.session.commit()
+
+        attempt_data = {
+            "url": image_url,
+        }
+
+        attempt_data2 = {
+            "time": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        }
+
+        publish_to_mqtt(Config.MQTT_TOPIC, json.dumps(attempt_data))
+        publish_to_mqtt(Config.MQTT_TOPIC, json.dumps(attempt_data2))
+
         return jsonify({'message': 'Reconocimiento facial no coincidente'}), 401

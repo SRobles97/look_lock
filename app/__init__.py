@@ -29,9 +29,6 @@ def create_app():
 
     from app.models import User
 
-    # Inicializa el proceso de captura de fotos
-    threading.Thread(target=initialize_photo_process, daemon=True).start()
-
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
@@ -42,5 +39,7 @@ def create_app():
     app.register_blueprint(public_blueprint, url_prefix='/public')
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(protected_blueprint, url_prefix='/protected')
+
+    threading.Thread(target=initialize_photo_process, daemon=True).start()
 
     return app

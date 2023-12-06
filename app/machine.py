@@ -1,9 +1,18 @@
+import json
+from datetime import datetime
+from io import BytesIO
+
 import face_recognition
+import requests
 from picamera2 import Picamera2
 import RPi.GPIO as GPIO
 import time
 
+from app import db
+from app.models import User, FailedLoginAttempt
+from app.mqtt_client import publish_to_mqtt
 from app.util.files_utils import upload_image
+from config import Config
 
 # Configurar los pines GPIO
 GPIO.setmode(GPIO.BCM)
@@ -30,14 +39,51 @@ def take_picture(camera):
 
 def check_for_face_and_upload(picture_path):
     sent_image = face_recognition.load_image_file(picture_path)
-    sent_encoding = face_recognition.face_encodings(sent_image)
-    if not sent_encoding:
+    sent_encodings = face_recognition.face_encodings(sent_image)
+    if not sent_encodings:
         print("No se encontró una cara en la imagen")
         return
 
-    # Cargar la imagen de la persona autorizada
-    print("Cargando imagen de la persona autorizada...")
-    upload_image(picture_path)
+    sent_encoding = sent_encodings[0]
+
+    face_found = False
+
+    # Cargar la imagen de la persona
+    print("Cargando imagen de persona")
+    image_url = upload_image('last_photo.jpg')
+
+    for user in User.query.all():
+        user_image_url = user.image_url
+        response = requests.get(user_image_url)
+        user_image = face_recognition.load_image_file(BytesIO(response.content))
+
+        user_encodings = face_recognition.face_encodings(user_image)
+        if not user_encodings:
+            # No se encontró rostro en la imagen del usuario
+            continue
+
+        user_encoding = user_encodings[0]
+        results = face_recognition.compare_faces([user_encoding], sent_encoding)
+        if results[0]:
+            face_found = True
+            print(f"Se encontró una coincidencia con {user.name}")
+
+    if not face_found:
+        print("No se encontró una coincidencia con ningún usuario")
+        failed_attempt = FailedLoginAttempt(attempted_url=image_url)
+        db.session.add(failed_attempt)
+        db.session.commit()
+
+        attempt_data = {
+            "url": image_url,
+        }
+
+        attempt_data2 = {
+            "time": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        }
+
+        publish_to_mqtt(Config.MQTT_TOPIC, json.dumps(attempt_data))
+        publish_to_mqtt(Config.MQTT_TOPIC, json.dumps(attempt_data2))
 
 
 def measure_distance():

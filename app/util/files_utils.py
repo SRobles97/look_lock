@@ -10,7 +10,7 @@ def upload_image(filename):
     try:
         g = Github(Config.GITHUB_TOKEN)
         repo = g.get_user().get_repo(Config.GITHUB_REPO)
-        branch_name = "main"  # Asegúrate de que esta sea la rama donde quieres subir las imágenes
+        branch = repo.get_branch("main")
 
         # Genera un hash único para el nombre del archivo
         unique_filename = f"{uuid.uuid4()}_{filename}"
@@ -25,19 +25,16 @@ def upload_image(filename):
         git_blob = repo.create_git_blob(content.decode('utf-8'), "base64")
 
         # Crea un árbol con el nuevo blob y el árbol actual de la rama para mantener otros archivos.
-        base_tree = repo.get_git_tree(branch_name)
+        base_tree = repo.get_git_tree(branch.commit.sha)
         element = InputGitTreeElement(path=unique_filename, mode='100644', type='blob', sha=git_blob.sha)
         tree = repo.create_git_tree([element], base_tree)
 
         # Crea un nuevo commit en la rama.
-        parent = repo.get_git_commit(branch_name)
+        parent = repo.get_git_commit(branch.commit.sha)
         commit = repo.create_git_commit("Subida de imagen con nombre único", tree, [parent])
-        repo.get_git_ref(f'refs/heads/{branch_name}').edit(commit.sha)
-
-        # Construye la URL de la imagen
-        image_url = (f"https://raw.githubusercontent.com/{repo.owner.login}"
-                     f"/{Config.GITHUB_REPO}/{branch_name}/{unique_filename}")
-
+        ref = repo.get_git_ref(f'heads/{branch.name}')
+        ref.edit(sha=commit.sha)
+        image_url = f"https://raw.githubusercontent.com/{Config.GITHUB_REPO}/main/app/static/images/{unique_filename}"
         return image_url
 
     except Exception as e:

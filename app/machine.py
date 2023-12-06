@@ -7,9 +7,6 @@ import requests
 from picamera2 import Picamera2
 import RPi.GPIO as GPIO
 import time
-
-from app import db
-from app.models import User, FailedLoginAttempt
 from app.mqtt_client import publish_to_mqtt
 from app.util.files_utils import upload_image
 from config import Config
@@ -38,6 +35,8 @@ def take_picture(camera):
 
 
 def check_for_face_and_upload(picture_path):
+    from app import db
+    from app.models import User, FailedLoginAttempt
     sent_image = face_recognition.load_image_file(picture_path)
     sent_encodings = face_recognition.face_encodings(sent_image)
     if not sent_encodings:

@@ -1,3 +1,4 @@
+import face_recognition
 from picamera2 import Picamera2
 import RPi.GPIO as GPIO
 import time
@@ -20,10 +21,23 @@ def take_picture(camera):
         camera.configure(camera_config)
         camera.start()
         time.sleep(2)
-        camera.capture_file("app/static/images/last_photo.jpg")
-        upload_image("last_photo.jpg")
+        picture_path = "app/static/images/last_photo.jpg"
+        camera.capture_file(picture_path)
+        check_for_face_and_upload(picture_path)
     finally:
         camera.stop()
+
+
+def check_for_face_and_upload(picture_path):
+    sent_image = face_recognition.load_image_file(picture_path)
+    sent_encoding = face_recognition.face_encodings(sent_image)
+    if not sent_encoding:
+        print("No se encontró una cara en la imagen")
+        return
+
+    # Cargar la imagen de la persona autorizada
+    print("Cargando imagen de la persona autorizada...")
+    upload_image(picture_path)
 
 
 def measure_distance():
@@ -62,7 +76,7 @@ def initialize_photo_process():
             if distance < 100:  # por ejemplo, menos de 100 cm
                 take_picture(picam2)
                 # Tiempo de espera después de tomar una foto
-                time.sleep(300)
+                time.sleep(10)
             else:
                 # Tiempo de espera para la próxima medición de distancia
                 time.sleep(1)
